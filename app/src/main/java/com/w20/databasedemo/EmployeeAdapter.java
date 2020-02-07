@@ -2,13 +2,17 @@ package com.w20.databasedemo;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -91,20 +95,78 @@ public class EmployeeAdapter extends ArrayAdapter {
         AlertDialog alertDialog =builder.create();
         alertDialog.show();
 
+
     }
 
 
-    private void updateEmployee(Employee employee) {
+    private void updateEmployee(final Employee employee) {
 
-    String udpateSQL = "Update employee SET name = ? , department = ? , joiningdate = ? , salary = ? where id = ?";
-    mDatabase.execSQL(udpateSQL,new String[]{employee.getName(),employee.getDept(),employee.getJoiningdate(),String.valueOf(employee.getSalary()),String.valueOf(employee.getId())});
+        AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
+        LayoutInflater inflater =  LayoutInflater.from(mContext);
+        View v = inflater.inflate(R.layout.dialog_update_employee,null);
+        alert.setView(v);
+        final AlertDialog alertDialog = alert.create();
+        alert.show();
+
+        final EditText etName = v.findViewById(R.id.editTextName);
+        final EditText etSalary = v.findViewById(R.id.editTextSalary);
+        final Spinner spinner = v.findViewById(R.id.spinnerDepartment);
+
+        etName.setText(employee.getName());
+        etSalary.setText(String.valueOf(employee.getSalary()));
+
+        v.findViewById(R.id.btn_Update_Employee).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = etName.getText().toString().trim();
+                String salary = etSalary.getText().toString().trim();
+                String dept = spinner.getSelectedItem().toString();
+
+                if(name.isEmpty()){
+                    etName.setError("Please Enter Name");
+                    etName.requestFocus();
+                    return;
+                }
+
+                if(salary.isEmpty()){
+                    etSalary.setError("Please Enter Salary");
+                    etSalary.requestFocus();
+                    return;
+                }
+                String udpateSQL = "Update employees SET name = ? , department = ? , salary = ? where id = ?";
+                mDatabase.execSQL(udpateSQL,new String[]{name,dept,salary,String.valueOf(employee.getId())});
+                Toast.makeText(mContext,"Employee Updated",Toast.LENGTH_LONG).show();
+                loadEmployees();
+                alertDialog.dismiss();
+            }
+        });
+
+
+
+
 
     }
 
 
     private void loadEmployees() {
+    String sql = "Select * from employees";
+        Cursor cursor = mDatabase.rawQuery(sql,null);
+        employees.clear();
+        if(cursor.moveToFirst()){
 
+            do{
+                employees.add(new Employee(
+                        cursor.getInt(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getString(3),
+                        cursor.getDouble(4)
 
+                ));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        notifyDataSetChanged();
     }
 
 
