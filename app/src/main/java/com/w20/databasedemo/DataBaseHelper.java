@@ -64,7 +64,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         cv.put(COLUMN_JOIN_DATE,joiningDate);
         cv.put(COLUMN_SALARY,salary);
 
-        return sqLiteDatabase.insert(TABLE_NAME,null,cv) != 1;
+        return sqLiteDatabase.insert(TABLE_NAME,null,cv) != -1;
 
 
       //  return true;
