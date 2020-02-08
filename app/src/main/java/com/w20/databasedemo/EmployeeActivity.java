@@ -15,7 +15,8 @@ import java.util.List;
 public class EmployeeActivity extends AppCompatActivity {
 
     private static final String TAG = "EmployeeActivity";
-    SQLiteDatabase mDatabase;
+   // SQLiteDatabase mDatabase;
+    DataBaseHelper mDatabase;
     List<Employee> employeeList;
     ListView listView;
 
@@ -27,14 +28,16 @@ public class EmployeeActivity extends AppCompatActivity {
         listView = findViewById(R.id.lvEmployees);
         employeeList = new ArrayList<>();
 
-        mDatabase = openOrCreateDatabase(MainActivity.DATABASE_NAME, MODE_PRIVATE, null);
+      //  mDatabase = openOrCreateDatabase(MainActivity.DATABASE_NAME, MODE_PRIVATE, null);
+        mDatabase = new DataBaseHelper(this);
         loadEmployees();
     }
 
     private void loadEmployees() {
-        String sql = "SELECT * FROM employees";
-        Cursor cursor = mDatabase.rawQuery(sql, null);
+//        String sql = "SELECT * FROM employees";
+//        Cursor cursor = mDatabase.rawQuery(sql, null);
 
+        Cursor cursor = mDatabase.getAllEmployees();
         if (cursor.moveToFirst()) {
             do {
                 employeeList.add(new Employee(

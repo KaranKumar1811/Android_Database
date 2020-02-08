@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class EmployeeAdapter extends ArrayAdapter {
@@ -25,10 +26,10 @@ public class EmployeeAdapter extends ArrayAdapter {
     Context mContext;
     int layoutRes;
     List<Employee> employees;
-    SQLiteDatabase mDatabase;
+  //  SQLiteDatabase mDatabase;
+    DataBaseHelper mDatabase;
 
-
-    public EmployeeAdapter(@NonNull Context mContext, int layoutRes, List<Employee> employees, SQLiteDatabase mDatabase) {
+    public EmployeeAdapter(@NonNull Context mContext, int layoutRes, List<Employee> employees, DataBaseHelper mDatabase) {
         super(mContext,layoutRes, employees);
         this.mContext = mContext;
         this.layoutRes = layoutRes;
@@ -79,8 +80,9 @@ public class EmployeeAdapter extends ArrayAdapter {
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String sql = "Delete from employees Where id = ?";
-                mDatabase.execSQL(sql,new Integer[]{employee.getId()});
+//                String sql = "Delete from employees Where id = ?";
+//                mDatabase.execSQL(sql,new Integer[]{employee.getId()});
+                if(mDatabase.deleteEmployee(employee.getId()))
                 loadEmployees();
             }
         });
@@ -112,8 +114,13 @@ public class EmployeeAdapter extends ArrayAdapter {
         final EditText etSalary = v.findViewById(R.id.editTextSalary);
         final Spinner spinner = v.findViewById(R.id.spinnerDepartment);
 
+        String[] departmentsArray = mContext.getResources().getStringArray(R.array.departments);
+        int position = Arrays.asList(departmentsArray).indexOf(employee.getDept());
+
+
         etName.setText(employee.getName());
         etSalary.setText(String.valueOf(employee.getSalary()));
+        spinner.setSelection(position);
 
         v.findViewById(R.id.btn_Update_Employee).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -133,10 +140,18 @@ public class EmployeeAdapter extends ArrayAdapter {
                     etSalary.requestFocus();
                     return;
                 }
-                String udpateSQL = "Update employees SET name = ? , department = ? , salary = ? where id = ?";
-                mDatabase.execSQL(udpateSQL,new String[]{name,dept,salary,String.valueOf(employee.getId())});
-                Toast.makeText(mContext,"Employee Updated",Toast.LENGTH_LONG).show();
-                loadEmployees();
+//                String udpateSQL = "Update employees SET name = ? , department = ? , salary = ? where id = ?";
+//                mDatabase.execSQL(udpateSQL,new String[]{name,dept,salary,String.valueOf(employee.getId())});
+                if(mDatabase.updateEmployee(employee.getId(),name,dept,Double.parseDouble(salary))){
+                    Toast.makeText(mContext,"Employee Updated",Toast.LENGTH_LONG).show();
+                    loadEmployees();
+                }
+                else
+                {
+                    Toast.makeText(mContext,"Employee Not Updated",Toast.LENGTH_LONG).show();
+                }
+
+
                 alertDialog.dismiss();
             }
         });
@@ -149,8 +164,10 @@ public class EmployeeAdapter extends ArrayAdapter {
 
 
     private void loadEmployees() {
-    String sql = "Select * from employees";
-        Cursor cursor = mDatabase.rawQuery(sql,null);
+//    String sql = "Select * from employees";
+//        Cursor cursor = mDatabase.rawQuery(sql,null);
+
+        Cursor cursor = mDatabase.getAllEmployees();
         employees.clear();
         if(cursor.moveToFirst()){
 
